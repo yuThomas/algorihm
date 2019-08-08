@@ -1,96 +1,60 @@
+#include <vector>
 #include <iostream>
-#include <cstdlib>
-#include <stdexcept>
-#include "profiler.h"
+using namespace std;
 
-using std::cout;
-using std::endl;
-using std::logic_error;
-
-class CQuickSort
+void swap( int *lhs, int *rhs )
 {
-public:
-	static void QuickSort(int *arr, int length, int start, int end);	
-
-private:
-	static int RandomInRange(int start, int end);
-	static int Partiton(int *arr, int length, int start, int end);
-	static void Swap(int *lhs, int *rhs);
-};
-
-void CQuickSort::QuickSort(int *arr, int length, int start, int end)
-{
-	if( start >= end )
-		return;
-
-	int index = Partiton(arr, length, start, end);
-	if( index>start )
-		QuickSort(arr, length, start, index-1);
-	if( index<end )
-		QuickSort(arr, length, index+1, end);
+    int temp = *lhs;
+    *lhs = *rhs;
+    *rhs = temp;
 }
 
-void CQuickSort::Swap(int *lhs, int *rhs)
+int partition(int *arr, int start, int end)
 {
-	int temp = *lhs;
-	*lhs = *rhs;
-	*rhs = temp;
+    //int pivot = random()%(end-start) + start;
+    int pivot = ((end-start) >> 1) + start;
+    int small = start - 1;
+    swap(arr+pivot, arr+end);
+    for( int i=start; i < end; ++i )
+    {
+        if( arr[i] < arr[end] )
+        {
+            ++small;
+            if( i != small )
+            {
+                swap(arr+i, arr+small);
+            }
+        }
+    }
+    ++small;
+    swap(arr+small, arr+end);
+    return small;
 }
 
-int CQuickSort::Partiton(int *arr, int length, int start, int end)
+void qsort(int *arr, int start, int end, int len)
 {
-	if( arr==NULL || start<0 || start>end || end>=length )
-		throw logic_error("Invalid Parameters");
-
-	int index = RandomInRange(start, end);
-	Swap(&arr[index], &arr[end]);
-
-	int small = start - 1;
-	for( index=start; index<end; ++index)
-	{
-		if( arr[index]<arr[end] )
-		{
-			++small;
-			if( index != small )
-				Swap(&arr[index], &arr[small]);
-		}
-	}
-	++small;
-	Swap(&arr[small], &arr[end]);
-
-	return small;
+    if( start <  0 || start >= end || end >= len )
+    {
+        return;
+    }
+    int pivot = partition(arr, start, end);
+    if( start < pivot )
+    {
+        qsort(arr, start, pivot-1, len);
+    }
+    if( pivot < end )
+    {
+        qsort(arr, pivot+1, end, len);
+    }
 }
 
-int CQuickSort::RandomInRange(int start, int end)
+int main(int argc, char const *argv[])
 {
-	if( start>end )
-		Swap(&start, &end);
-
-	srandom(time(NULL));
-	if( start==end )
-		return random()%start;
-
-	return random()%(end-start) + start;
-}
-
-int main(int argc, char **argv)
-{
-	long N = atol(argv[1]);
-
-	int arr1[N];
-
-	for(long i=0; i<N; ++i)
-	{
-		srandom(i);
-		arr1[i] = random()%N;
-	}
-	PROFILER;
-	CQuickSort::QuickSort(arr1, N, 0, N-1);
-/*
-	for(int i=0; i<N; ++i)
-	{
-		cout << arr1[i] << endl;
-	}
-*/
-	return 0;
+    int arr[10] = {9, 5, 1, 0, 3, 6, 2, 1, 8, 4};
+    qsort(arr, 0, 9, 10);
+    for( int i = 0; i < 10; ++i )
+    {
+        cout << arr[i] << ' ';
+    }
+    cout << endl;
 }
